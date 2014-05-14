@@ -28,6 +28,10 @@ class BeslistConversionPixel extends Module
         );
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
+
+        if (Configuration::get("CONVERSION_PIXEL_TEST")) {
+            $this->warning = $this->l('Beslist Conversion Pixel is configured for testing.');
+        }
     }
 
     /**
