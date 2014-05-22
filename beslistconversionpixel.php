@@ -227,7 +227,6 @@ class BeslistConversionPixel extends Module
                 'productListing' => $productListing,
                 'test' => Configuration::get('CONVERSION_PIXEL_TEST'),
                 'ident' => Configuration::get('CONVERSION_PIXEL_IDENT'),
-                'base' => Configuration::get('PS_SHOP_DOMAIN'),
             )
         );
 

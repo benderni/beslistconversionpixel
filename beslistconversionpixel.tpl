@@ -1,5 +1,5 @@
 <script>
-    var ident = '{(!empty($ident)) ? $ident : $base}';
+    var ident = '{(!empty($ident)) ? $ident : $smarty.server.HTTP_HOST}';
     var _v = _v || []; _v.push(
             ['ti', {$orderId}],
             ['os', {$orderSum}],
