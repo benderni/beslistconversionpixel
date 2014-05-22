@@ -78,11 +78,17 @@ class BeslistConversionPixel extends Module
         {
             Configuration::updateValue(
                 'CONVERSION_PIXEL_TEST',
-                (Tools::getValue('conversion_test'))
+                (Tools::getValue('conversion_test')),
+                false,
+                null,
+                (int)Context::getContext()->shop->id
             );
             Configuration::updateValue(
                 'CONVERSION_PIXEL_IDENT',
-                strval(Tools::getValue('conversion_ident'))
+                strval(Tools::getValue('conversion_ident')),
+                false,
+                null,
+                (int)Context::getContext()->shop->id
             );
             $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
@@ -133,8 +139,8 @@ class BeslistConversionPixel extends Module
         );
 
         // Load current value
-        $helper->fields_value['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT');
-        $helper->fields_value['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST');
+        $helper->fields_value['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT', null, null, (int)Context::getContext()->shop->id);
+        $helper->fields_value['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST', null, null, (int)Context::getContext()->shop->id);
 
         return $helper->generateForm($fields_form);
     }
@@ -225,8 +231,8 @@ class BeslistConversionPixel extends Module
                 'orderSum' => $totalAmount * 100,
                 'orderCost' => $order->total_shipping * 100,
                 'productListing' => $productListing,
-                'test' => Configuration::get('CONVERSION_PIXEL_TEST'),
-                'ident' => Configuration::get('CONVERSION_PIXEL_IDENT'),
+                'test' => Configuration::get('CONVERSION_PIXEL_TEST', null, null, (int)Context::getContext()->shop->id),
+                'ident' => Configuration::get('CONVERSION_PIXEL_IDENT', null, null, (int)Context::getContext()->shop->id),
             )
         );
 
