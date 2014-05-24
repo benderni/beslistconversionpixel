@@ -19,7 +19,7 @@ class BeslistConversionPixel extends Module
     {
         $this->name = 'beslistconversionpixel';
         $this->tab = 'administration';
-        $this->version = '1.1';
+        $this->version = '1.2';
         $this->author = 'Benny Van der Stee';
         $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6.0.6');
 
@@ -48,6 +48,15 @@ class BeslistConversionPixel extends Module
             return false;
         }
 
+        Configuration::updateValue(
+            'CONVERSION_PIXEL_TEST',
+            1
+        );
+        Configuration::updateValue(
+            'CONVERSION_PIXEL_IDENT',
+            ''
+        );
+
         return true;
     }
 
@@ -58,7 +67,10 @@ class BeslistConversionPixel extends Module
      */
     public function uninstall()
     {
-        if (!parent::uninstall()) {
+        if (!parent::uninstall()
+            || !Configuration::deleteByName('CONVERSION_PIXEL_TEST')
+            || !Configuration::deleteByName('CONVERSION_PIXEL_IDENT')
+        ) {
             return false;
         }
 
@@ -78,17 +90,11 @@ class BeslistConversionPixel extends Module
         {
             Configuration::updateValue(
                 'CONVERSION_PIXEL_TEST',
-                (Tools::getValue('conversion_test')),
-                false,
-                null,
-                (int)Context::getContext()->shop->id
+                Tools::getValue('conversion_test')
             );
             Configuration::updateValue(
                 'CONVERSION_PIXEL_IDENT',
-                strval(Tools::getValue('conversion_ident')),
-                false,
-                null,
-                (int)Context::getContext()->shop->id
+                strval(Tools::getValue('conversion_ident'))
             );
             $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
@@ -139,8 +145,8 @@ class BeslistConversionPixel extends Module
         );
 
         // Load current value
-        $helper->fields_value['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT', null, null, (int)Context::getContext()->shop->id);
-        $helper->fields_value['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST', null, null, (int)Context::getContext()->shop->id);
+        $helper->fields_value['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT');
+        $helper->fields_value['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST');
 
         return $helper->generateForm($fields_form);
     }
@@ -231,8 +237,8 @@ class BeslistConversionPixel extends Module
                 'orderSum' => $totalAmount * 100,
                 'orderCost' => $order->total_shipping * 100,
                 'productListing' => $productListing,
-                'test' => Configuration::get('CONVERSION_PIXEL_TEST', null, null, (int)Context::getContext()->shop->id),
-                'ident' => Configuration::get('CONVERSION_PIXEL_IDENT', null, null, (int)Context::getContext()->shop->id),
+                'test' => Configuration::get('CONVERSION_PIXEL_TEST'),
+                'ident' => Configuration::get('CONVERSION_PIXEL_IDENT'),
             )
         );
 
