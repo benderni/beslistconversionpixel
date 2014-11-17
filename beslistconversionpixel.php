@@ -195,7 +195,7 @@ class BeslistConversionPixel extends Module
         $productListing = array();
         foreach ($products as $product) {
             $counter++;
-            $price = round(($product['product_price'] * (1 + ($product['tax_rate'] / 100))) * 100);
+            $price = round(($product['product_price'] * (1 + ($product['tax_rate'] / 100))), 2);
             $productListing[] = array('id' => $product['product_id'],'qty' => $product['product_quantity'], 'price' => $price);
         }
         $totalAmount = $order->total_paid - $order->total_shipping;
@@ -203,8 +203,8 @@ class BeslistConversionPixel extends Module
         $smarty->assign(
             array(
                 'orderId' => $order->id,
-                'orderSum' => $totalAmount * 100,
-                'orderCost' => $order->total_shipping * 100,
+                'orderSum' => $totalAmount,
+                'orderCost' => $order->total_shipping,
                 'productListing' => $productListing,
                 'test' => Configuration::get('CONVERSION_PIXEL_TEST'),
                 'ident' => Configuration::get('CONVERSION_PIXEL_IDENT'),
