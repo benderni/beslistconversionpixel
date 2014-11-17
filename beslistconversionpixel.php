@@ -84,7 +84,7 @@ class BeslistConversionPixel extends Module
      */
     public function getContent()
     {
-        $output = null;
+        $output = '';
 
         if (Tools::isSubmit('submit'.$this->name))
         {
@@ -99,7 +99,7 @@ class BeslistConversionPixel extends Module
             $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
 
-        return $output.$this->displayForm();
+        return $output.$this->renderForm();
     }
 
     /**
@@ -107,99 +107,76 @@ class BeslistConversionPixel extends Module
      *
      * @return mixed
      */
-    public function displayForm()
+    public function renderForm()
     {
-        // Get default Language
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
-
-        $fields_form = $this->initFieldsFormArray();
+        $fields_form = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Conversion test ?'),
+                        'name' => 'conversion_ident',
+                        'desc' => $this->l('Shop ID (Beslist Code)')
+                    ),
+                    array(
+                        'type' => 'radio',
+                        'label' => $this->l('Conversion test: '),
+                        'name' => 'conversion_test',
+                        'required' => false,
+                        'is_bool' => true,
+                        'class' => 'input-radio',
+                        'values' => array(
+                            array(
+                                'id' => 'conversion_yes',
+                                'value' => 1,
+                                'label' => $this->l('Yes')),
+                            array(
+                                'id' => 'conversion_no',
+                                'value' => 0,
+                                'label' => $this->l('No')),
+                        )
+                    ),
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save')
+                )
+            )
+        );
 
         $helper = new HelperForm();
 
-        // Module, token and currentIndex
+        $helper->show_toolbar = false;
+        $helper->table =  $this->table;
+        $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
+        $helper->default_form_language = $lang->id;
         $helper->module = $this;
-        $helper->name_controller = $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
-
-        // Language
-        $helper->default_form_language = $default_lang;
-        $helper->allow_employee_form_lang = $default_lang;
-
-        // Title and toolbar
-        $helper->title = $this->displayName;
-        $helper->show_toolbar = true;        // false -> remove toolbar
-        $helper->toolbar_scroll = true;      // yes - > Toolbar is always visible on the top of the screen.
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
+        $helper->identifier = $this->identifier;
         $helper->submit_action = 'submit'.$this->name;
-        $helper->toolbar_btn = array(
-            'save' =>
-                array(
-                    'desc' => $this->l('Save'),
-                    'href' => AdminController::$currentIndex.'&configure='.$this->name.'&save'.$this->name.
-                        '&token='.Tools::getAdminTokenLite('AdminModules'),
-                ),
-            'back' => array(
-                'href' => AdminController::$currentIndex.'&token='.Tools::getAdminTokenLite('AdminModules'),
-                'desc' => $this->l('Back to list')
-            )
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->tpl_vars = array(
+            'uri' => $this->getPathUri(),
+            'fields_value' => $this->getConfigFieldsValues(),
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id
         );
 
-        // Load current value
-        $helper->fields_value['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT');
-        $helper->fields_value['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST');
-
-        return $helper->generateForm($fields_form);
+        return $helper->generateForm(array($fields_form));
     }
 
-    /**
-     * Create form fields
-     *
-     * @return mixed
-     */
-    private function initFieldsFormArray()
+    public function getConfigFieldsValues()
     {
-        // Init Fields form array
-        $fields_form[0]['form'] = array(
-            'legend' => array(
-                'title' => $this->l('Settings'),
-            ),
-            'input' => array(
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Conversion test ?'),
-                    'name' => 'conversion_ident',
-                    'size' => 40,
-                    'length' => 255,
-                    'required' => false,
-                    'desc' => $this->l('Leave empty for default.'),
-                ),
-                array(
-                    'type' => 'radio',
-                    'label' => $this->l('Conversion test: '),
-                    'name' => 'conversion_test',
-                    'class' => 't',
-                    'required' => false,
-                    'is_bool' => true,
-                    'values' => array(
-                        array(
-                            'id' => 'conversion_yes',
-                            'value' => 1,
-                            'label' => $this->l('Yes')),
-                        array(
-                            'id' => 'conversion_no',
-                            'value' => 0,
-                            'label' => $this->l('No')),
-                    ),
-                    'desc' => $this->l('Use for testing or real conversions'),
-                ),
-            ),
-            'submit' => array(
-                'title' => $this->l('Save'),
-                'class' => 'button'
-            )
-        );
+        $fields = array();
 
-        return $fields_form;
+        $fields['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT');
+        $fields['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST');
+
+        return $fields;
     }
 
     /**
@@ -214,20 +191,12 @@ class BeslistConversionPixel extends Module
 
         $order = $params['objOrder'];
         $products = $order->getProducts();
-        $totalProducts = count($products);
         $counter = 0;
-        $productListing = '';
+        $productListing = array();
         foreach ($products as $product) {
             $counter++;
             $price = round(($product['product_price'] * (1 + ($product['tax_rate'] / 100))) * 100);
-            $productListing .=
-                $product['product_id']
-                . ':' . $product['product_quantity']
-                . ':' . $price;
-
-            if ($counter < $totalProducts) {
-                $productListing .= ';';
-            }
+            $productListing[] = array('id' => $product['product_id'],'qty' => $product['product_quantity'], 'price' => $price);
         }
         $totalAmount = $order->total_paid - $order->total_shipping;
 

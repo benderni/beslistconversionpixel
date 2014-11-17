@@ -1,15 +1,23 @@
 <script>
-    var ident = '{(!empty($ident)) ? $ident : $smarty.server.HTTP_HOST}';
-    var _v = _v || []; _v.push(
-            ['ti', {$orderId}],
-            ['os', {$orderSum}],
-            ['pl', '{$productListing}'],
-            ['oc', {$orderCost}],
-            ['ident', ident],
-            ['test', {$test}]
-    );
-    var _a = "/pot/?v=2.1&p=" + encodeURIComponent(_v) + "&_=" + (Math.random() + "" * 10000000000000),
-            _p = ('https:' == document.location.protocol ? 'https://' : 'http://'),
-            _i = new Image;
-    _i.onerror = function(e) { _i.src = _p+"\x70\x32\x2E\x62\x65\x73\x6C\x69\x73\x74\x2E\x6E\x6C"+_a; _i = false; }; _i.src = _p+"\x77\x77\x77\x2E\x62\x65\x73\x6C\x69\x73\x74\x2E\x6E\x6C"+_a;
+    var beslistQueue = [];
+    beslistQueue.push(['setShopId', '{$ident}']);
+    {if $test == 1}
+    beslistQueue.push(['cps', 'setTestmode', true]);
+    {/if}
+    beslistQueue.push(['cps', 'setTransactionId', {$orderId}]);
+    beslistQueue.push(['cps', 'setOrdersum', {$orderSum}]);
+    beslistQueue.push(['cps', 'setOrderCosts', {$orderCost}]);
+    beslistQueue.push(['cps', 'setOrderProducts',[
+        {foreach from=$productListing item=v}
+            [{$v['id']}, {$v['qty']}, {$v['price']}],
+        {/foreach}
+    ]]);
+    beslistQueue.push(['cps', 'trackSale']);
+    (function () {
+        var ba = document.createElement('script');
+        ba.async = true;
+        ba.src = '//pt1.beslist.nl/pt.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ba, s);
+    })();
 </script>

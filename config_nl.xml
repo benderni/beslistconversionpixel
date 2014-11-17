@@ -2,7 +2,7 @@
 <module>
 	<name>beslistconversionpixel</name>
 	<displayName><![CDATA[Beslist Conversion Pixel]]></displayName>
-	<version><![CDATA[1.1]]></version>
+	<version><![CDATA[2]]></version>
 	<description><![CDATA[Adding the Beslist conversion pixel to the order confirmation page.]]></description>
 	<author><![CDATA[Benny Van der Stee]]></author>
 	<tab><![CDATA[administration]]></tab>
