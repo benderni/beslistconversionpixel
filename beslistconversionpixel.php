@@ -118,26 +118,26 @@ class BeslistConversionPixel extends Module
                 'input' => array(
                     array(
                         'type' => 'text',
-                        'label' => $this->l('Conversion test ?'),
+                        'label' => $this->l('Shop ID'),
                         'name' => 'conversion_ident',
-                        'desc' => $this->l('Shop ID (Beslist Code)')
+                        'desc' => $this->l('Shop ID (Beslist Code), this is the Shop ID/Code you got from Beslist.')
                     ),
                     array(
                         'type' => 'radio',
-                        'label' => $this->l('Conversion test: '),
+                        'label' => $this->l('Mode: '),
                         'name' => 'conversion_test',
-                        'required' => false,
+                        'required' => true,
                         'is_bool' => true,
                         'class' => 'input-radio',
                         'values' => array(
                             array(
                                 'id' => 'conversion_yes',
                                 'value' => 1,
-                                'label' => $this->l('Yes')),
+                                'label' => $this->l('Test')),
                             array(
                                 'id' => 'conversion_no',
                                 'value' => 0,
-                                'label' => $this->l('No')),
+                                'label' => $this->l('Production')),
                         )
                     ),
                 ),
@@ -196,7 +196,8 @@ class BeslistConversionPixel extends Module
         foreach ($products as $product) {
             $counter++;
             $price = round(($product['product_price'] * (1 + ($product['tax_rate'] / 100))), 2);
-            $productListing[] = array('id' => $product['product_id'],'qty' => $product['product_quantity'], 'price' => $price);
+            $id = !empty($product['ean13']) ? $product['ean13']:$product['upc'];
+            $productListing[] = array('id' => empty($id) ? $product['product_id']:$id,'qty' => $product['product_quantity'], 'price' => $price);
         }
         $totalAmount = $order->total_paid - $order->total_shipping;
 
