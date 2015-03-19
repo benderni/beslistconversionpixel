@@ -12,6 +12,8 @@ if (!defined('_PS_VERSION_'))
  */
 class BeslistConversionPixel extends Module
 {
+    private $_html = '';
+
     /**
      * Basic configuration prestashop modules
      */
@@ -19,10 +21,11 @@ class BeslistConversionPixel extends Module
     {
         $this->name = 'beslistconversionpixel';
         $this->tab = 'administration';
-        $this->version = '2.1.1';
+        $this->version = '2.2';
         $this->author = 'Benny Van der Stee';
         $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6.0.11');
 
+        $this->bootstrap = true;
         parent::__construct();
 
         $this->displayName = $this->l('Beslist Conversion Pixel');
@@ -56,6 +59,22 @@ class BeslistConversionPixel extends Module
             'CONVERSION_PIXEL_IDENT',
             ''
         );
+        Configuration::updateValue(
+            'CONVERSION_CATEGORY_SKU',
+            ''
+        );
+        Configuration::updateValue(
+            'CONVERSION_CATEGORY_EAN',
+            ''
+        );
+        Configuration::updateValue(
+            'CONVERSION_PRODUCT_SKU',
+            ''
+        );
+        Configuration::updateValue(
+            'CONVERSION_PRODUCT_EAN',
+            ''
+        );
 
         return true;
     }
@@ -70,6 +89,10 @@ class BeslistConversionPixel extends Module
         if (!parent::uninstall()
             || !Configuration::deleteByName('CONVERSION_PIXEL_TEST')
             || !Configuration::deleteByName('CONVERSION_PIXEL_IDENT')
+            || !Configuration::deleteByName('CONVERSION_CATEGORY_SKU')
+            || !Configuration::deleteByName('CONVERSION_CATEGORY_EAN')
+            || !Configuration::deleteByName('CONVERSION_PRODUCT_SKU')
+            || !Configuration::deleteByName('CONVERSION_PRODUCT_EAN')
         ) {
             return false;
         }
@@ -84,9 +107,7 @@ class BeslistConversionPixel extends Module
      */
     public function getContent()
     {
-        $output = '';
-
-        if (Tools::isSubmit('submit'.$this->name))
+        if (Tools::isSubmit('btnSubmit'))
         {
             Configuration::updateValue(
                 'CONVERSION_PIXEL_TEST',
@@ -96,10 +117,28 @@ class BeslistConversionPixel extends Module
                 'CONVERSION_PIXEL_IDENT',
                 strval(Tools::getValue('conversion_ident'))
             );
-            $output .= $this->displayConfirmation($this->l('Settings updated'));
+            Configuration::updateValue(
+                'CONVERSION_CATEGORY_SKU',
+                strval(Tools::getValue('conversion_category_sku'))
+            );
+            Configuration::updateValue(
+                'CONVERSION_CATEGORY_EAN',
+                strval(Tools::getValue('conversion_category_ean'))
+            );
+            Configuration::updateValue(
+                'CONVERSION_PRODUCT_SKU',
+                strval(Tools::getValue('conversion_product_sku'))
+            );
+            Configuration::updateValue(
+                'CONVERSION_PRODUCT_EAN',
+                strval(Tools::getValue('conversion_product_ean'))
+            );
+            $this->_html .= $this->displayConfirmation($this->l('Settings updated'));
         }
 
-        return $output.$this->renderForm();
+        $this->_html .= $this->renderForm();
+
+        return $this->_html;
     }
 
     /**
@@ -109,6 +148,19 @@ class BeslistConversionPixel extends Module
      */
     public function renderForm()
     {
+        $id_lang = $this->context->language->id;
+
+        $categoryCore = new CategoryCore();
+        $categories = $categoryCore->getCategories($id_lang, true, false);
+
+        $query = array(array('id' => 0, 'label' => 'none'));
+        foreach ($categories as $category) {
+            $query[] = array(
+                'id' => $category['id_category'],
+                'label' => $category['name']
+            );
+        }
+
         $fields_form = array(
             'form' => array(
                 'legend' => array(
@@ -120,11 +172,11 @@ class BeslistConversionPixel extends Module
                         'type' => 'text',
                         'label' => $this->l('Shop ID'),
                         'name' => 'conversion_ident',
-                        'desc' => $this->l('Shop ID (Beslist Code), this is the Shop ID/Code you got from Beslist.')
+                        'desc' => $this->l('This is the Shop ID/Code you got from Beslist.')
                     ),
                     array(
                         'type' => 'radio',
-                        'label' => $this->l('Mode: '),
+                        'label' => $this->l('Mode'),
                         'name' => 'conversion_test',
                         'required' => true,
                         'is_bool' => true,
@@ -140,6 +192,40 @@ class BeslistConversionPixel extends Module
                                 'label' => $this->l('Production')),
                         )
                     ),
+                    array(
+                        'type' => 'select',
+                        'name' => 'conversion_category_sku',
+                        'label' => $this->l('Parent Categorie'),
+                        'options' => array(
+                            'query' => $query,
+                            'id' => 'id',
+                            'name' => 'label'
+                        ),
+                        'desc' => $this->l('Selecteer de hoofd categorie van producten die onder volgende categorieën hangen: Computers, Electronica, Huishoudelijk apparatuur, Fietsen, Gereedschap en Software.'),
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Unique Product ID'),
+                        'name' => 'conversion_product_sku',
+                        'desc' => $this->l('Unieke Code voor: Computers, Electronica, Huishoudelijk apparatuur, Fietsen, Gereedschap en Software. (vb. sku, upc, ...)')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'name' => 'conversion_category_ean',
+                        'label' => $this->l('Parent Categorie'),
+                        'options' => array(
+                            'query' => $query,
+                            'id' => 'id',
+                            'name' => 'label'
+                        ),
+                        'desc' => $this->l('Selecteer de hoofd categorie van producten die onder volgende categorieën hangen: Boeken, Engelse Boeken, CD’s, DVD’s en Games.'),
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Unique Product ID'),
+                        'name' => 'conversion_product_ean',
+                        'desc' => $this->l('Unieke Code voor: Boeken, Engelse Boeken, CD’s, DVD’s en Games. (vb. ean, ean13, ...)')
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save')
@@ -150,20 +236,21 @@ class BeslistConversionPixel extends Module
         $helper = new HelperForm();
 
         $helper->show_toolbar = false;
-        $helper->table =  $this->table;
+        $helper->table = $this->table;
         $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
         $helper->default_form_language = $lang->id;
         $helper->module = $this;
         $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
+        $this->fields_form = array();
         $helper->identifier = $this->identifier;
-        $helper->submit_action = 'submit'.$this->name;
+        $helper->submit_action = 'btnSubmit';
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = array(
             'uri' => $this->getPathUri(),
             'fields_value' => $this->getConfigFieldsValues(),
             'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id
+            'id_language' => $id_lang
         );
 
         return $helper->generateForm(array($fields_form));
@@ -175,6 +262,10 @@ class BeslistConversionPixel extends Module
 
         $fields['conversion_ident'] = Configuration::get('CONVERSION_PIXEL_IDENT');
         $fields['conversion_test'] = Configuration::get('CONVERSION_PIXEL_TEST');
+        $fields['conversion_category_sku'] = Configuration::get('CONVERSION_CATEGORY_SKU');
+        $fields['conversion_category_ean'] = Configuration::get('CONVERSION_CATEGORY_EAN');
+        $fields['conversion_product_sku'] = Configuration::get('CONVERSION_PRODUCT_SKU');
+        $fields['conversion_product_ean'] = Configuration::get('CONVERSION_PRODUCT_EAN');
 
         return $fields;
     }
@@ -189,15 +280,25 @@ class BeslistConversionPixel extends Module
     {
         global $smarty;
 
+        $categorySku = Configuration::get('CONVERSION_CATEGORY_SKU');
+        $categoryEan = Configuration::get('CONVERSION_CATEGORY_EAN');
+        $productSku = Configuration::get('CONVERSION_PRODUCT_SKU');
+        $productEan = Configuration::get('CONVERSION_PRODUCT_EAN');
+
         $order = $params['objOrder'];
         $products = $order->getProducts();
         $counter = 0;
         $productListing = array();
         foreach ($products as $product) {
+            $categories = ProductCore::getProductCategories($product['product_id']);
+            $unique = $productSku;
+            if (in_array($categoryEan, $categories))
+                $unique = $productEan;
+            var_dump($unique);
             $counter++;
             $price = round(($product['product_price'] * (1 + ($product['tax_rate'] / 100))), 2);
-            $id = !empty($product['ean13']) ? $product['ean13']:$product['upc'];
-            $productListing[] = array('id' => empty($id) ? $product['product_id']:$id,'qty' => $product['product_quantity'], 'price' => $price);
+            $id = !empty($product[$unique]) ? $product[$unique]:$product['product_id'];
+            $productListing[] = array('id' => $id,'qty' => $product['product_quantity'], 'price' => $price);
         }
         $totalAmount = $order->total_paid - $order->total_shipping;
 
