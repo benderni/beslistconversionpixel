@@ -2,10 +2,10 @@
 <module>
 	<name>beslistconversionpixel</name>
 	<displayName><![CDATA[Beslist Conversion Pixel]]></displayName>
-	<version><![CDATA[2.1.1]]></version>
+	<version><![CDATA[2.2.1]]></version>
 	<description><![CDATA[Adding the Beslist conversion pixel to the order confirmation page.]]></description>
 	<author><![CDATA[Benny Van der Stee]]></author>
-	<tab><![CDATA[administration]]></tab>
+	<tab><![CDATA[smart_shopping]]></tab>
 	<confirmUninstall><![CDATA[Are you sure you want to uninstall?]]></confirmUninstall>
 	<is_configurable>1</is_configurable>
 	<need_instance>1</need_instance>

@@ -21,9 +21,9 @@ class BeslistConversionPixel extends Module
     {
         $this->name = 'beslistconversionpixel';
         $this->tab = 'administration';
-        $this->version = '2.2';
+        $this->version = '2.2.1';
         $this->author = 'Benny Van der Stee';
-        $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6.0.11');
+        $this->ps_versions_compliancy = array('min' => '1.5', 'max' => '1.6.1.0');
 
         $this->bootstrap = true;
         parent::__construct();
